@@ -7,21 +7,11 @@
   >
     <!-- File Icon -->
     <div class="file-icon">
-      <svg v-if="fileType === 'image'" width="20" height="20" viewBox="0 0 24 24">
-        <path d="M21,19V5c0,-1.1 -0.9,-2 -2,-2H5c-1.1,0 -2,0.9 -2,2v14c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2zM8.5,13.5l2.5,3.01L14.5,12l4.5,6H5l3.5,-4.5z" fill="#4CAF50"/>
-      </svg>
-      <svg v-else-if="fileType === 'code'" width="20" height="20" viewBox="0 0 24 24">
-        <path d="M9.4,16.6L4.8,12l4.6,-4.6L8,6l-6,6l6,6L9.4,16.6zM14.6,16.6l4.6,-4.6l-4.6,-4.6L16,6l6,6l-6,6L14.6,16.6z" fill="#2196F3"/>
-      </svg>
-      <svg v-else-if="fileType === 'document'" width="20" height="20" viewBox="0 0 24 24">
-        <path d="M6,2c-1.1,0 -2,0.9 -2,2v16c0,1.1 0.89,2 2,2h12c1.1,0 2,-0.9 2,-2V8l-6,-6H6zM13,9V3.5L18.5,9H13z" fill="#FF9800"/>
-      </svg>
-      <svg v-else-if="fileType === 'json'" width="20" height="20" viewBox="0 0 24 24">
-        <path d="M5,3H7V5H5V10A2,2 0 0,1 3,12A2,2 0 0,1 5,14V19H7V21H5C3.93,20.73 3,20.1 3,19V15A2,2 0 0,0 1,13H0V11H1A2,2 0 0,0 3,9V5A2,2 0 0,1 5,3M19,3A2,2 0 0,1 21,5V9A2,2 0 0,0 23,11H24V13H23A2,2 0 0,0 21,15V19A2,2 0 0,1 19,21H17V19H19V14A2,2 0 0,1 21,12A2,2 0 0,1 19,10V5H17V3H19Z" fill="#9C27B0"/>
-      </svg>
-      <svg v-else width="20" height="20" viewBox="0 0 24 24">
-        <path d="M13,9V3.5L18.5,9M6,2C4.89,2 4,2.89 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2H6Z" fill="#757575"/>
-      </svg>
+      <FileImageIcon v-if="fileType === 'image'" />
+      <FileCodeIcon v-else-if="fileType === 'code'" />
+      <FileDocumentIcon v-else-if="fileType === 'document'" />
+      <FileJsonIcon v-else-if="fileType === 'json'" />
+      <FileDefaultIcon v-else />
     </div>
 
     <!-- File Info -->
@@ -36,9 +26,7 @@
     <!-- File Actions -->
     <div class="file-actions">
       <button class="action-button" @click.stop="downloadFile" title="Download">
-        <svg width="16" height="16" viewBox="0 0 24 24">
-          <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z" fill="currentColor"/>
-        </svg>
+        <DownloadIcon />
       </button>
     </div>
   </div>
@@ -46,6 +34,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import FileImageIcon from '../assets/icons/file-image.svg'
+import FileCodeIcon from '../assets/icons/file-code.svg'
+import FileDocumentIcon from '../assets/icons/file-document.svg'
+import FileJsonIcon from '../assets/icons/file-json.svg'
+import FileDefaultIcon from '../assets/icons/file-default.svg'
+import DownloadIcon from '../assets/icons/download.svg'
 
 interface File {
   id: number
@@ -154,6 +148,11 @@ function formatDate(dateString: string): string {
   background-color: #f5f5f5;
 }
 
+.file-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
 .file-info {
   flex: 1;
   min-width: 0;
@@ -203,5 +202,10 @@ function formatDate(dateString: string): string {
 .action-button:hover {
   background-color: #e0e0e0;
   color: #2196f3;
+}
+
+.action-button svg {
+  width: 16px;
+  height: 16px;
 }
 </style>

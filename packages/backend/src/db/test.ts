@@ -2,12 +2,10 @@ import { pool } from '../config/database'
 
 async function testDatabase() {
   try {
-    // Test basic connection
     console.log('Testing database connection...')
     const result = await pool.query('SELECT COUNT(*) FROM folders')
     console.log(`✅ Database connected. Found ${result.rows[0].count} folders`)
 
-    // Show folder tree structure
     const tree = await pool.query(`
       SELECT
         f.id,

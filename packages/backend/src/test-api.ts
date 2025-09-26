@@ -1,4 +1,3 @@
-// Simple API test script (works without database)
 
 const BASE_URL = 'http://localhost:3000'
 
@@ -6,7 +5,6 @@ async function testAPI() {
   console.log('🧪 Testing File Explorer API...\n')
 
   try {
-    // Test root endpoint
     console.log('1. Testing root endpoint:')
     const rootResponse = await fetch(`${BASE_URL}/`)
     const rootData = await rootResponse.json()
@@ -21,7 +19,6 @@ async function testAPI() {
       console.log('✅ Folder tree loaded successfully')
       console.log(`📁 Found ${treeData.data.length} root folders`)
 
-      // Show first level of tree
       treeData.data.forEach((folder: any) => {
         console.log(`  📂 ${folder.name} (${folder.children?.length || 0} subfolders)`)
       })
@@ -48,7 +45,6 @@ async function testAPI() {
   }
 }
 
-// Run test if this file is executed directly
 if (import.meta.main) {
   testAPI()
 }

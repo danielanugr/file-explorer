@@ -6,7 +6,6 @@ export async function seedDatabase() {
   try {
     console.log('Seeding database with sample data...')
 
-    // Read and execute seed file
     const seedPath = join(__dirname, '../../../../database/migrations/002_insert_sample_data.sql')
     const seedSQL = readFileSync(seedPath, 'utf-8')
 
@@ -19,7 +18,6 @@ export async function seedDatabase() {
   }
 }
 
-// Run seeding if this file is executed directly
 if (import.meta.main) {
   seedDatabase()
     .then(() => process.exit(0))

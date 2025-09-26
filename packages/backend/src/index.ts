@@ -1,27 +1,37 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
-import { foldersRouter } from './routes/folders'
+import { createFoldersRouter } from './api/routes/folders'
 import { testDrizzleConnection } from './config/drizzle'
+import { Container } from './infrastructure/di/Container'
+
+Container.getInstance()
 
 const app = new Elysia()
   .use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
   }))
   .get('/', () => ({
-    message: 'File Explorer Backend API',
-    version: '1.0.0',
+    message: 'File Explorer Backend API - Enterprise Edition',
+    version: '2.0.0',
+    features: [
+      'Pagination support',
+      'Caching layer',
+      'Rate limiting',
+      'Hexagonal architecture',
+      'SOLID principles'
+    ],
     endpoints: [
       'GET /api/folders/tree - Get complete folder tree',
-      'GET /api/folders/:id/children - Get direct children of folder',
-      'GET /api/folders/root - Get root folders'
+      'GET /api/folders/:id/children?page=1&limit=50 - Get paginated children',
+      'GET /api/folders/root?page=1&limit=50 - Get paginated root folders',
+      'GET /api/folders/search?q=term&page=1&limit=50 - Search with pagination'
     ]
   }))
-  .use(foldersRouter)
+  .use(createFoldersRouter())
   .listen(3000)
 
-// Test database connection on startup
 testDrizzleConnection().then(connected => {
   if (connected) {
     console.log(`🚀 Backend server running at http://localhost:3000`)

@@ -1,68 +1,134 @@
-import { eq, isNull, asc } from 'drizzle-orm'
+import { eq, isNull, asc, ilike, count } from 'drizzle-orm'
 import { db } from '../config/drizzle'
-import { folders, files, type Folder, type NewFolder, type File } from '../schema'
+import { folders, files } from '../schema'
+import { IFolderRepository, PaginationOptions, SearchOptions, PaginatedResult } from '../domain/interfaces/IFolderRepository'
+import { Folder, NewFolder, File, FolderWithChildren } from '../domain/entities/Folder'
 
-// Enhanced folder type with children for tree structure
-export interface FolderWithChildren extends Folder {
-  children?: FolderWithChildren[]
-}
+export class DrizzleFolderRepository implements IFolderRepository {
 
-export class DrizzleFolderRepository {
-
-  // Get all folders (flat list)
-  async getAllFolders(): Promise<Folder[]> {
+  async findById(id: number): Promise<Folder | null> {
     const result = await db
       .select()
       .from(folders)
-      .orderBy(
-        asc(folders.parentId), // NULL values first (root folders)
-        asc(folders.name)
-      )
+      .where(eq(folders.id, id))
+      .limit(1) as Folder[]
 
-    return result
+    return result[0] || null
   }
 
-  // Get direct children of a folder (or root folders if parentId is null)
-  async getFolderChildren(parentId: number | null): Promise<Folder[]> {
-    if (parentId === null) {
-      // Get root folders
-      return await db
-        .select()
+  async findAll(options?: PaginationOptions): Promise<PaginatedResult<Folder>> {
+    const page = options?.page || 1
+    const limit = options?.limit || 50
+    const offset = (page - 1) * limit
+
+    const [items, totalResult] = await Promise.all([
+      db.select()
         .from(folders)
-        .where(isNull(folders.parentId))
-        .orderBy(asc(folders.name))
-    } else {
-      // Get children of specific folder
-      return await db
-        .select()
+        .orderBy(asc(folders.parentId), asc(folders.name))
+        .limit(limit)
+        .offset(offset) as Promise<Folder[]>,
+
+      db.select({ count: count() })
         .from(folders)
-        .where(eq(folders.parentId, parentId))
-        .orderBy(asc(folders.name))
+    ])
+
+    const total = totalResult[0].count
+    const totalPages = Math.ceil(total / limit)
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
     }
   }
 
-  // Build complete folder tree structure
-  async getFolderTree(): Promise<FolderWithChildren[]> {
-    const allFolders = await this.getAllFolders()
+  async findByParentId(parentId: number | null, options?: PaginationOptions): Promise<PaginatedResult<Folder>> {
+    const page = options?.page || 1
+    const limit = options?.limit || 50
+    const offset = (page - 1) * limit
 
-    // Create a map for quick lookup
+    const whereClause = parentId === null ? isNull(folders.parentId) : eq(folders.parentId, parentId)
+
+    const [items, totalResult] = await Promise.all([
+      db.select()
+        .from(folders)
+        .where(whereClause)
+        .orderBy(asc(folders.name))
+        .limit(limit)
+        .offset(offset) as Promise<Folder[]>,
+
+      db.select({ count: count() })
+        .from(folders)
+        .where(whereClause)
+    ])
+
+    const total = totalResult[0].count
+    const totalPages = Math.ceil(total / limit)
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
+    }
+  }
+
+  async create(folderData: NewFolder): Promise<Folder> {
+    const result = await db
+      .insert(folders)
+      .values({
+        ...folderData,
+        updatedAt: new Date(),
+      })
+      .returning() as Folder[]
+
+    return result[0]
+  }
+
+  async update(id: number, folderData: Partial<NewFolder>): Promise<Folder | null> {
+    const result = await db
+      .update(folders)
+      .set({
+        ...folderData,
+        updatedAt: new Date(),
+      })
+      .where(eq(folders.id, id))
+      .returning() as Folder[]
+
+    return result[0] || null
+  }
+
+  async delete(id: number): Promise<boolean> {
+    const result = await db
+      .delete(folders)
+      .where(eq(folders.id, id))
+
+    return result.rowsAffected > 0
+  }
+
+  async getFolderTree(): Promise<Folder[]> {
+    const allFolders = await this.findAll({ page: 1, limit: 10000 })
+
     const folderMap = new Map<number, FolderWithChildren>()
     const rootFolders: FolderWithChildren[] = []
 
-    // First pass: create all folder objects with empty children arrays
-    allFolders.forEach(folder => {
+    allFolders.items.forEach(folder => {
       folderMap.set(folder.id, { ...folder, children: [] })
     })
 
-    // Second pass: build the tree structure
-    allFolders.forEach(folder => {
+    allFolders.items.forEach(folder => {
       const folderNode = folderMap.get(folder.id)!
 
       if (folder.parentId === null) {
-        // Root folder
         rootFolders.push(folderNode)
       } else {
-        // Child folder - add to parent's children
         const parent = folderMap.get(folder.parentId)
         if (parent) {
           parent.children!.push(folderNode)
@@ -73,63 +139,55 @@ export class DrizzleFolderRepository {
     return rootFolders
   }
 
-  // Get folder by ID
-  async getFolderById(id: number): Promise<Folder | null> {
-    const result = await db
-      .select()
-      .from(folders)
-      .where(eq(folders.id, id))
-      .limit(1)
+  async search(options: SearchOptions): Promise<{ folders: Folder[], files: File[] }> {
+    const searchPattern = `%${options.query}%`
+    const limit = Math.min(options.limit || 50, 100)
 
-    return result[0] || null
+    const [matchingFolders, matchingFiles] = await Promise.all([
+      db.select()
+        .from(folders)
+        .where(ilike(folders.name, searchPattern))
+        .orderBy(asc(folders.name))
+        .limit(limit),
+
+      db.select()
+        .from(files)
+        .where(ilike(files.name, searchPattern))
+        .orderBy(asc(files.name))
+        .limit(limit)
+    ]) as [Folder[], File[]]
+
+    return {
+      folders: matchingFolders,
+      files: matchingFiles
+    }
   }
 
-  // Create new folder
-  async createFolder(folderData: NewFolder): Promise<Folder> {
-    const result = await db
-      .insert(folders)
-      .values({
-        ...folderData,
-        updatedAt: new Date(),
-      })
-      .returning()
+  async getFolderStats(id: number): Promise<{ filesCount: number, childrenCount: number }> {
+    const [filesResult, childrenResult] = await Promise.all([
+      db.select({ count: count() })
+        .from(files)
+        .where(eq(files.folderId, id)),
 
-    return result[0]
+      db.select({ count: count() })
+        .from(folders)
+        .where(eq(folders.parentId, id))
+    ])
+
+    return {
+      filesCount: filesResult[0].count,
+      childrenCount: childrenResult[0].count
+    }
   }
 
-  // Update folder
-  async updateFolder(id: number, folderData: Partial<NewFolder>): Promise<Folder | null> {
-    const result = await db
-      .update(folders)
-      .set({
-        ...folderData,
-        updatedAt: new Date(),
-      })
-      .where(eq(folders.id, id))
-      .returning()
-
-    return result[0] || null
-  }
-
-  // Delete folder (cascades to children and files)
-  async deleteFolder(id: number): Promise<boolean> {
-    const result = await db
-      .delete(folders)
-      .where(eq(folders.id, id))
-
-    return result.rowCount > 0
-  }
-
-  // Get files in a folder
   async getFilesInFolder(folderId: number): Promise<File[]> {
     return await db
       .select()
       .from(files)
       .where(eq(files.folderId, folderId))
-      .orderBy(asc(files.name))
+      .orderBy(asc(files.name)) as File[]
   }
 
-  // Get folder with its files and children count
   async getFolderWithStats(id: number): Promise<{
     folder: Folder | null
     filesCount: number
@@ -152,6 +210,32 @@ export class DrizzleFolderRepository {
       filesCount: filesInFolder.length,
       childrenCount: children.length,
       files: filesInFolder,
+    }
+  }
+
+  async searchFoldersAndFiles(query: string, limit: number = 50): Promise<{
+    folders: Folder[]
+    files: File[]
+  }> {
+    const searchPattern = `%${query}%`
+
+    const [matchingFolders, matchingFiles] = await Promise.all([
+      db.select()
+        .from(folders)
+        .where(ilike(folders.name, searchPattern))
+        .orderBy(asc(folders.name))
+        .limit(limit),
+
+      db.select()
+        .from(files)
+        .where(ilike(files.name, searchPattern))
+        .orderBy(asc(files.name))
+        .limit(limit)
+    ]) as [Folder[], File[]]
+
+    return {
+      folders: matchingFolders,
+      files: matchingFiles
     }
   }
 }

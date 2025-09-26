@@ -16,16 +16,7 @@
         :class="{ expanded: isExpanded }"
         @click.stop="toggleExpanded"
       >
-        <svg width="12" height="12" viewBox="0 0 12 12">
-          <path
-            d="M4.5 2.5L8 6l-3.5 3.5"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <ChevronRightIcon />
       </button>
 
       <!-- Spacer for nodes without children -->
@@ -33,24 +24,8 @@
 
       <!-- Folder Icon -->
       <div class="folder-icon">
-        <svg v-if="hasChildren" width="16" height="16" viewBox="0 0 24 24">
-          <path
-            v-if="isExpanded"
-            d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"
-            fill="#FFB74D"
-          />
-          <path
-            v-else
-            d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"
-            fill="#FFA726"
-          />
-        </svg>
-        <svg v-else width="16" height="16" viewBox="0 0 24 24">
-          <path
-            d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"
-            fill="#FFB74D"
-          />
-        </svg>
+        <FolderOpenIcon v-if="hasChildren && isExpanded" />
+        <FolderClosedIcon v-else />
       </div>
 
       <!-- Folder Name -->
@@ -79,6 +54,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { FolderTree } from '../types/folder'
+import ChevronRightIcon from '../assets/icons/chevron-right.svg'
+import FolderOpenIcon from '../assets/icons/folder-open.svg'
+import FolderClosedIcon from '../assets/icons/folder-closed.svg'
 
 interface Props {
   folder: FolderTree
@@ -170,6 +148,11 @@ function toggleExpanded() {
   transform: rotate(90deg);
 }
 
+.expand-button svg {
+  width: 12px;
+  height: 12px;
+}
+
 .expand-spacer {
   width: 24px;
   height: 20px;
@@ -179,6 +162,11 @@ function toggleExpanded() {
   margin-right: 8px;
   display: flex;
   align-items: center;
+}
+
+.folder-icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 .folder-name {

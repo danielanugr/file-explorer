@@ -5,27 +5,22 @@ async function testDrizzleIntegration() {
   console.log('🧪 Testing Drizzle ORM integration...\n')
 
   try {
-    // Test connection
     console.log('1. Testing database connection:')
     const connected = await testDrizzleConnection()
     if (!connected) {
       throw new Error('Database connection failed')
     }
 
-    // Test repository
     const folderRepo = new DrizzleFolderRepository()
 
     console.log('\n2. Testing folder operations:')
 
-    // Get all folders
     const allFolders = await folderRepo.getAllFolders()
     console.log(`✅ Found ${allFolders.length} folders`)
 
-    // Get folder tree
     const tree = await folderRepo.getFolderTree()
     console.log(`✅ Built folder tree with ${tree.length} root folders`)
 
-    // Show tree structure
     console.log('\n📁 Folder Tree Structure:')
     function printTree(folders: any[], level = 0) {
       folders.forEach(folder => {
@@ -42,7 +37,6 @@ async function testDrizzleIntegration() {
 
     printTree(tree)
 
-    // Test folder with stats
     if (allFolders.length > 0) {
       console.log('\n3. Testing folder stats:')
       const firstFolder = allFolders[0]
@@ -60,7 +54,6 @@ async function testDrizzleIntegration() {
   }
 }
 
-// Run test if this file is executed directly
 if (import.meta.main) {
   testDrizzleIntegration()
     .then(() => process.exit(0))

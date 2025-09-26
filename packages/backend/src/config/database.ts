@@ -1,6 +1,5 @@
 import { Pool } from 'pg'
 
-// Database configuration
 export const dbConfig = {
   user: process.env.DB_USER || 'postgres',
   host: process.env.DB_HOST || 'localhost',
@@ -9,10 +8,8 @@ export const dbConfig = {
   port: parseInt(process.env.DB_PORT || '5432'),
 }
 
-// Create connection pool
 export const pool = new Pool(dbConfig)
 
-// Test connection
 export async function testConnection() {
   try {
     const client = await pool.connect()

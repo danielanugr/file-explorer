@@ -1,9 +1,9 @@
 export interface Folder {
   id: number
   name: string
-  parent_id: number | null
-  created_at: string
-  updated_at: string
+  parentId: number | null
+  createdAt: string
+  updatedAt: string
 }
 
 export interface FolderTree extends Folder {
@@ -25,6 +25,15 @@ export interface File {
   updatedAt: string
 }
 
+export interface PaginationInfo {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+  hasNext: boolean
+  hasPrev: boolean
+}
+
 export interface FolderChildrenResponse {
   folder: Folder
   children: Folder[]
@@ -32,5 +41,19 @@ export interface FolderChildrenResponse {
   stats: {
     childrenCount: number
     filesCount: number
+  }
+  pagination?: PaginationInfo
+}
+
+export interface SearchResponse {
+  query: string
+  results: {
+    folders: Folder[]
+    files: File[]
+  }
+  counts: {
+    folders: number
+    files: number
+    total: number
   }
 }

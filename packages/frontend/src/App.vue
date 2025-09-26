@@ -1,7 +1,13 @@
 <template>
   <div id="app">
     <header class="header">
-      <h1>📁 File Explorer</h1>
+      <div class="header-content">
+        <h1>📁 File Explorer</h1>
+        <SearchBar
+          @select-folder="onSearchFolderSelect"
+          @select-file="onSearchFileSelect"
+        />
+      </div>
     </header>
 
     <div class="explorer-container">
@@ -25,7 +31,9 @@
       <!-- Right Panel - Selected Folder Contents -->
       <div class="right-panel">
         <div class="panel-header">
-          <h3>📄 Contents{{ selectedFolder ? ` - ${selectedFolder.name}` : '' }}</h3>
+          <h3>
+            📄 Contents{{ selectedFolder ? ` - ${selectedFolder.name}` : '' }}
+          </h3>
         </div>
         <div class="panel-content">
           <div v-if="!selectedFolder" class="placeholder">
@@ -42,8 +50,11 @@
               <div class="folder-details">
                 <h4>📂 {{ selectedFolder.name }}</h4>
                 <p class="folder-meta">
-                  {{ folderStats.childrenCount }} folder{{ folderStats.childrenCount !== 1 ? 's' : '' }},
-                  {{ folderStats.filesCount }} file{{ folderStats.filesCount !== 1 ? 's' : '' }}
+                  {{ folderStats.childrenCount }} folder{{
+                    folderStats.childrenCount !== 1 ? 's' : ''
+                  }}, {{ folderStats.filesCount }} file{{
+                    folderStats.filesCount !== 1 ? 's' : ''
+                  }}
                 </p>
               </div>
             </div>
@@ -51,7 +62,10 @@
             <!-- Content Area -->
             <div class="content-area">
               <!-- Subfolders Grid -->
-              <div v-if="selectedFolderChildren.length > 0" class="children-grid">
+              <div
+                v-if="selectedFolderChildren.length > 0"
+                class="children-grid"
+              >
                 <h5 class="section-title">📁 Folders</h5>
                 <div
                   v-for="child in selectedFolderChildren"
@@ -62,7 +76,9 @@
                   <div class="folder-icon-large">📁</div>
                   <div class="folder-info-card">
                     <div class="folder-name">{{ child.name }}</div>
-                    <div class="folder-date">{{ formatDate(child.createdAt) }}</div>
+                    <div class="folder-date">
+                      {{ formatDate(child.createdAt) }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -84,7 +100,13 @@
               </div>
 
               <!-- Empty State -->
-              <div v-if="selectedFolderChildren.length === 0 && selectedFolderFiles.length === 0" class="empty">
+              <div
+                v-if="
+                  selectedFolderChildren.length === 0 &&
+                  selectedFolderFiles.length === 0
+                "
+                class="empty"
+              >
                 <div class="empty-icon">📂</div>
                 <p>This folder is empty</p>
               </div>
@@ -100,6 +122,7 @@
 import { ref, onMounted } from 'vue'
 import FolderTreeComponent from './components/FolderTree.vue'
 import FileItem from './components/FileItem.vue'
+import SearchBar from './components/SearchBar.vue'
 import { folderService } from './services/folderService'
 import type { FolderTree, Folder, File } from './types/folder'
 
@@ -145,7 +168,10 @@ async function onFolderSelect(folder: FolderTree) {
     if (response.success) {
       selectedFolderChildren.value = response.data.children
       selectedFolderFiles.value = response.data.files || []
-      folderStats.value = response.data.stats || { childrenCount: 0, filesCount: 0 }
+      folderStats.value = response.data.stats || {
+        childrenCount: 0,
+        filesCount: 0
+      }
     } else {
       console.error('Failed to load folder contents:', response.error)
       selectedFolderChildren.value = []
@@ -163,7 +189,11 @@ async function onFolderSelect(folder: FolderTree) {
 }
 
 function navigateToChild(child: Folder) {
-  console.log('Navigate to child:', child.name)
+  // Find the folder in the tree and select it
+  const folderInTree = findFolderInTree(child.id)
+  if (folderInTree) {
+    onFolderSelect(folderInTree)
+  }
 }
 
 function formatDate(dateString: string): string {
@@ -190,11 +220,40 @@ function onFileDownload(file: File) {
   console.log('Downloading file:', file.name)
   // In a real app, you would implement file download functionality
 }
+
+function onSearchFolderSelect(folder: Folder) {
+  const folderTree = findFolderInTree(folder.id)
+  if (folderTree) {
+    onFolderSelect(folderTree)
+  }
+}
+
+function onSearchFileSelect(file: File) {
+  selectedFile.value = file
+  console.log('File selected from search:', file.name)
+}
+
+function findFolderInTree(folderId: number): FolderTree | null {
+  function searchTree(folders: FolderTree[]): FolderTree | null {
+    for (const folder of folders) {
+      if (folder.id === folderId) {
+        return folder
+      }
+      if (folder.children) {
+        const found = searchTree(folder.children)
+        if (found) return found
+      }
+    }
+    return null
+  }
+  return searchTree(folderTree.value)
+}
 </script>
 
 <style scoped>
 #app {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, sans-serif;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -205,14 +264,30 @@ function onFileDownload(file: File) {
   background-color: #2c3e50;
   color: white;
   padding: 1rem;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+  padding: 0 1rem;
 }
 
 .header h1 {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+.header-content .search-container {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .explorer-container {
@@ -221,7 +296,8 @@ function onFileDownload(file: File) {
   min-height: 0;
 }
 
-.left-panel, .right-panel {
+.left-panel,
+.right-panel {
   background-color: white;
   border-right: 1px solid #e1e5e9;
   display: flex;
@@ -257,8 +333,8 @@ function onFileDownload(file: File) {
   overflow-y: auto;
 }
 
-
-.loading, .placeholder {
+.loading,
+.placeholder {
   color: #6c757d;
   font-style: italic;
   text-align: center;
@@ -314,7 +390,7 @@ function onFileDownload(file: File) {
   transition: all 0.3s ease;
   cursor: pointer;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
   padding: 1rem;
