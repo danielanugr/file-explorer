@@ -1,0 +1,32 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "migrate": "bun src/db/migrate.ts",
+    "seed": "bun src/db/seed.ts",
+    "db:setup": "bun run migrate && bun run seed",
+    "test:api": "bun src/test-api.ts",
+    "drizzle:generate": "drizzle-kit generate",
+    "drizzle:migrate": "drizzle-kit migrate",
+    "drizzle:studio": "drizzle-kit studio",
+    "drizzle:seed": "bun src/db/drizzleSeed.ts",
+    "drizzle:setup": "bun run drizzle:migrate && bun run drizzle:seed"
+  },
+  "dependencies": {
+    "elysia": "latest",
+    "pg": "^8.11.0",
+    "@elysiajs/cors": "latest",
+    "drizzle-orm": "^0.44.0",
+    "postgres": "^3.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/bun": "latest",
+    "@types/pg": "^8.10.0",
+    "drizzle-kit": "^0.31.0"
+  }
+}

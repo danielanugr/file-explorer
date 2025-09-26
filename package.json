@@ -1,0 +1,17 @@
+{
+  "name": "file-explorer",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter '*' build",
+    "dev:backend": "bun run --filter 'backend' dev",
+    "dev:frontend": "bun run --filter 'frontend' dev",
+    "db:setup": "bun run --filter 'backend' db:setup",
+    "test:api": "bun run --filter 'backend' test:api"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/bun": "latest"
+  }
+}
