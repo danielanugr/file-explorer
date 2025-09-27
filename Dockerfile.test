@@ -1,0 +1,8 @@
+FROM mcr.microsoft.com/playwright:v1.55.1-focal
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+
+CMD ["npm", "run", "test:e2e"]

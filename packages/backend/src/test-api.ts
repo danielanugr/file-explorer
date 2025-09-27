@@ -12,7 +12,7 @@ async function testAPI() {
     console.log('📋 Available endpoints:', rootData.endpoints)
 
     console.log('\n2. Testing folder tree endpoint:')
-    const treeResponse = await fetch(`${BASE_URL}/api/folders/tree`)
+    const treeResponse = await fetch(`${BASE_URL}/api/v1/folders/tree`)
     const treeData = await treeResponse.json()
 
     if (treeData.success) {
@@ -27,7 +27,7 @@ async function testAPI() {
     }
 
     console.log('\n3. Testing folder children endpoint:')
-    const childrenResponse = await fetch(`${BASE_URL}/api/folders/1/children`)
+    const childrenResponse = await fetch(`${BASE_URL}/api/v1/folders/1/children`)
     const childrenData = await childrenResponse.json()
 
     if (childrenData.success) {
