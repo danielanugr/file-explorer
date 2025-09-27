@@ -23,10 +23,10 @@ const app = new Elysia()
       'SOLID principles'
     ],
     endpoints: [
-      'GET /api/folders/tree - Get complete folder tree',
-      'GET /api/folders/:id/children?page=1&limit=50 - Get paginated children',
-      'GET /api/folders/root?page=1&limit=50 - Get paginated root folders',
-      'GET /api/folders/search?q=term&page=1&limit=50 - Search with pagination'
+      'GET /api/v1/folders/tree - Get complete folder tree',
+      'GET /api/v1/folders/:id/children?page=1&limit=50 - Get paginated children',
+      'GET /api/v1/folders/root?page=1&limit=50 - Get paginated root folders',
+      'GET /api/v1/folders/search?q=term&page=1&limit=50 - Search with pagination'
     ]
   }))
   .use(createFoldersRouter())
@@ -36,9 +36,9 @@ testDrizzleConnection().then(connected => {
   if (connected) {
     console.log(`🚀 Backend server running at http://localhost:3000`)
     console.log(`📁 API endpoints available:`)
-    console.log(`   GET /api/folders/tree`)
-    console.log(`   GET /api/folders/:id/children`)
-    console.log(`   GET /api/folders/root`)
+    console.log(`   GET /api/v1/folders/tree`)
+    console.log(`   GET /api/v1/folders/:id/children`)
+    console.log(`   GET /api/v1/folders/root`)
   } else {
     console.log('⚠️  Server started but database connection failed')
     console.log('   Make sure PostgreSQL is running with the correct configuration')

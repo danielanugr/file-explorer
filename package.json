@@ -8,10 +8,15 @@
     "dev:backend": "bun run --filter 'backend' dev",
     "dev:frontend": "bun run --filter 'frontend' dev",
     "db:setup": "bun run --filter 'backend' db:setup",
-    "test:api": "bun run --filter 'backend' test:api"
+    "test:api": "bun run --filter 'backend' test:api",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "@types/bun": "latest"
+    "@playwright/test": "^1.55.1",
+    "@types/bun": "latest",
+    "playwright": "^1.55.1",
+    "typescript": "^5.0.0"
   }
 }

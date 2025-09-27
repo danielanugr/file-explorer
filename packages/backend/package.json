@@ -14,7 +14,10 @@
     "drizzle:migrate": "drizzle-kit migrate",
     "drizzle:studio": "drizzle-kit studio",
     "drizzle:seed": "bun src/db/drizzleSeed.ts",
-    "drizzle:setup": "bun run drizzle:migrate && bun run drizzle:seed"
+    "drizzle:setup": "bun run drizzle:migrate && bun run drizzle:seed",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage"
   },
   "dependencies": {
     "elysia": "latest",
@@ -24,9 +27,10 @@
     "postgres": "^3.4.0"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
     "@types/bun": "latest",
+    "@types/node": "^24.5.2",
     "@types/pg": "^8.10.0",
-    "drizzle-kit": "^0.31.0"
+    "drizzle-kit": "^0.31.0",
+    "typescript": "^5.0.0"
   }
 }

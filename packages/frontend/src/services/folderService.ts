@@ -6,7 +6,7 @@ import type {
   SearchResponse,
 } from '../types/folder';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'http://localhost:3000/api/v1';
 
 class FolderService {
   private async fetchAPI<T>(endpoint: string): Promise<APIResponse<T>> {
